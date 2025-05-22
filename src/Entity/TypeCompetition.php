@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\TypeCompetitionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -56,7 +58,7 @@ class TypeCompetition
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['TypeCompetitions: read', 'TypeCompetitions: write'])]
+    #[Groups(['TypeCompetitions: read', 'TypeCompetitions: write', 'Competitions: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 30)]
@@ -67,8 +69,20 @@ class TypeCompetition
         max: 30,
         maxMessage: 'Le libellé ne doit pas dépasser {{ limit }} caractères.'
     )]
-    #[Groups(['TypeCompetitions: read', 'TypeCompetitions: write'])]
+    #[Groups(['TypeCompetitions: read', 'TypeCompetitions: write', 'Competitions: read'])]
     private ?string $libelle = null;
+
+    /**
+     * @var Collection<int, Competition>
+     */
+    #[ORM\OneToMany(targetEntity: Competition::class, mappedBy: 'typeCompetition', orphanRemoval: true)]
+    #[Groups(['TypeCompetitions: read'])]
+    private Collection $competitions;
+
+    public function __construct()
+    {
+        $this->competitions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -86,7 +100,7 @@ class TypeCompetition
 
         return $this;
     }
-    #[Groups(['TypeCompetitions: read'])]
+    #[Groups(['TypeCompetitions: read', 'Competitions: read'])]
     public function getLinks(): array
     {
         return [
@@ -94,5 +108,35 @@ class TypeCompetition
             'update' => '/api/type_competitions/' . $this->id,
             'delete' => '/api/type_competitions/' . $this->id,
         ];
+    }
+
+    /**
+     * @return Collection<int, Competition>
+     */
+    public function getCompetitions(): Collection
+    {
+        return $this->competitions;
+    }
+
+    public function addCompetition(Competition $competition): static
+    {
+        if (!$this->competitions->contains($competition)) {
+            $this->competitions->add($competition);
+            $competition->setTypeCompetition($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompetition(Competition $competition): static
+    {
+        if ($this->competitions->removeElement($competition)) {
+            // set the owning side to null (unless already changed)
+            if ($competition->getTypeCompetition() === $this) {
+                $competition->setTypeCompetition(null);
+            }
+        }
+
+        return $this;
     }
 }

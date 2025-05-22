@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\PaysRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -61,7 +63,7 @@ class Pays
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['Pays: read', 'Pays: write'])]
+    #[Groups(['Pays: read', 'Pays: write', 'Competitions: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
@@ -76,7 +78,20 @@ class Pays
         pattern: "/^[A-Z][a-zA-Zéèêëàâäîïôöùûüç' \-]{2,99}$/u",
         message: "Le nom du pays ne peut contenir que des lettres, des accents, des espaces, des apostrophes ou des tirets, et doit commencer par une majuscule."
     )]
+    #[Groups(['Pays: read', 'Pays: write', 'Competitions: read'])]
     private ?string $nom = null;
+
+    /**
+     * @var Collection<int, Competition>
+     */
+    #[ORM\OneToMany(targetEntity: Competition::class, mappedBy: 'pays')]
+    #[Groups(['Pays: read'])]
+    private Collection $competitions;
+
+    public function __construct()
+    {
+        $this->competitions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -95,7 +110,7 @@ class Pays
         return $this;
     }
 
-    #[Groups(['Pays: read'])]
+    #[Groups(['Pays: read', 'Competitions: read'])]
     public function getLinks(): array
     {
         return [
@@ -103,5 +118,35 @@ class Pays
             'update' => '/api/pays/' . $this->id,
             'delete' => '/api/pays/' . $this->id,
         ];
+    }
+
+    /**
+     * @return Collection<int, Competition>
+     */
+    public function getCompetitions(): Collection
+    {
+        return $this->competitions;
+    }
+
+    public function addCompetition(Competition $competition): static
+    {
+        if (!$this->competitions->contains($competition)) {
+            $this->competitions->add($competition);
+            $competition->setPays($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompetition(Competition $competition): static
+    {
+        if ($this->competitions->removeElement($competition)) {
+            // set the owning side to null (unless already changed)
+            if ($competition->getPays() === $this) {
+                $competition->setPays(null);
+            }
+        }
+
+        return $this;
     }
 }
