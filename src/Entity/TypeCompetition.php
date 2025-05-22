@@ -31,6 +31,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         ),
         new Put(
             description: 'Met à jour une ressource Type de Compétition.',
+            normalizationContext: ['groups' => ['TypeCompetitions: read']],
             denormalizationContext: ['groups' => ['TypeCompetitions: write']],
             security: "is_granted('ROLE_ADMIN')"
         ),
