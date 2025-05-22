@@ -18,12 +18,12 @@ class TypeCompetitionFixtures extends Fixture
         $this->addReference('type-competition_Championnat National', $type1);
 
         $type2 = new TypeCompetition();
-        $type2->setLibelle('Coupe Nationale');
+        $type2->setLibelle('Coupe National');
         $manager->persist($type2);
         $this->addReference('type-competition_Coupe Nationale', $type2);
 
         $type3 = new TypeCompetition();
-        $type3->setLibelle('SuperCoupe Nationale');
+        $type3->setLibelle('SuperCoupe National');
         $manager->persist($type3);
         $this->addReference('type-competition_SuperCoupe Nationale', $type3);
 
