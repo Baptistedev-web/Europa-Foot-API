@@ -42,6 +42,11 @@ class TypeCompetitionFixtures extends Fixture
         $manager->persist($type6);
         $this->addReference('type-competition_Ligue Europa Conférence', $type6);
 
+        $type7 = new TypeCompetition();
+        $type7->setLibelle("SuperCoupe d'Europe");
+        $manager->persist($type7);
+        $this->addReference("type-competition_SuperCoupe d'Europe", $type7);
+
         $manager->flush();
     }
 }

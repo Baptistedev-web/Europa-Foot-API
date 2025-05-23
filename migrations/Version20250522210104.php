@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250522174959 extends AbstractMigration
+final class Version20250522210104 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -25,6 +25,9 @@ final class Version20250522174959 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE pays (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(100) NOT NULL, UNIQUE INDEX nom_unique (nom), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE saison (id INT AUTO_INCREMENT NOT NULL, label VARCHAR(9) NOT NULL, debut VARCHAR(10) NOT NULL, fin VARCHAR(10) NOT NULL, UNIQUE INDEX saison_unique (label), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE type_competition (id INT AUTO_INCREMENT NOT NULL, libelle VARCHAR(30) NOT NULL, UNIQUE INDEX type_competition_unique (libelle), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -54,6 +57,9 @@ final class Version20250522174959 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE pays
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE saison
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE type_competition

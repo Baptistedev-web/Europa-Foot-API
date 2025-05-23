@@ -160,9 +160,9 @@ class CompetitionFixtures extends Fixture implements DependentFixtureInterface
         $manager->persist($competition5);
 
         $competition7 = new Competition();
-        $competition7->setNom('SuperCoupe Europe');
+        $competition7->setNom("SuperCoupe de l'UEFA");
         $competition7->setPays(null);
-        $competition7->setTypeCompetition($this->getReference('type-competition_SuperCoupe Nationale', TypeCompetition::class));
+        $competition7->setTypeCompetition($this->getReference("type-competition_SuperCoupe d'Europe", TypeCompetition::class));
         $manager->persist($competition7);
 
         $manager->flush();
