@@ -63,7 +63,7 @@ class Pays
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['Pays: read', 'Pays: write', 'Competitions: read'])]
+    #[Groups(['Pays: read', 'Pays: write', 'Competitions: read', 'Clubs: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
@@ -78,7 +78,7 @@ class Pays
         pattern: "/^[A-Z][a-zA-Zéèêëàâäîïôöùûüç' \-]{2,99}$/u",
         message: "Le nom du pays ne peut contenir que des lettres, des accents, des espaces, des apostrophes ou des tirets, et doit commencer par une majuscule."
     )]
-    #[Groups(['Pays: read', 'Pays: write', 'Competitions: read'])]
+    #[Groups(['Pays: read', 'Pays: write', 'Competitions: read', 'Clubs: read'])]
     private ?string $nom = null;
 
     /**
@@ -88,9 +88,17 @@ class Pays
     #[Groups(['Pays: read'])]
     private Collection $competitions;
 
+    /**
+     * @var Collection<int, Club>
+     */
+    #[ORM\OneToMany(targetEntity: Club::class, mappedBy: 'pays', orphanRemoval: true)]
+    #[Groups(['Pays: read'])]
+    private Collection $clubs;
+
     public function __construct()
     {
         $this->competitions = new ArrayCollection();
+        $this->clubs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -110,7 +118,7 @@ class Pays
         return $this;
     }
 
-    #[Groups(['Pays: read', 'Competitions: read'])]
+    #[Groups(['Pays: read', 'Competitions: read', 'Clubs: read'])]
     public function getLinks(): array
     {
         return [
@@ -144,6 +152,36 @@ class Pays
             // set the owning side to null (unless already changed)
             if ($competition->getPays() === $this) {
                 $competition->setPays(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Club>
+     */
+    public function getClubs(): Collection
+    {
+        return $this->clubs;
+    }
+
+    public function addClub(Club $club): static
+    {
+        if (!$this->clubs->contains($club)) {
+            $this->clubs->add($club);
+            $club->setPays($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClub(Club $club): static
+    {
+        if ($this->clubs->removeElement($club)) {
+            // set the owning side to null (unless already changed)
+            if ($club->getPays() === $this) {
+                $club->setPays(null);
             }
         }
 
