@@ -10,6 +10,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\SaisonRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -70,7 +72,7 @@ class Saison
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['saison: read'])]
+    #[Groups(['saison: read', 'CompetitionSaisons: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 9)]
@@ -88,7 +90,7 @@ class Saison
         'format' => 'YYYY-YYYY+1',
         'example' => '2025-2026'
     ])]
-    #[Groups(['saison: read', 'saison: write'])]
+    #[Groups(['saison: read', 'saison: write', 'CompetitionSaisons: read'])]
     private ?string $label = null;
 
     #[ORM\Column(length: 10)]
@@ -96,7 +98,7 @@ class Saison
         pattern: '/^\d{4}-\d{2}-\d{2}$/',
         message: 'La date de début doit être au format YYYY-MM-DD.'
     )]
-    #[Groups(['saison: read'])]
+    #[Groups(['saison: read', 'CompetitionSaisons: read'])]
     private ?string $debut = null;
 
     #[ORM\Column(length: 10)]
@@ -104,8 +106,19 @@ class Saison
         pattern: '/^\d{4}-\d{2}-\d{2}$/',
         message: 'La date de fin doit être au format YYYY-MM-DD.'
     )]
-    #[Groups(['saison: read'])]
+    #[Groups(['saison: read', 'CompetitionSaisons: read'])]
     private ?string $fin = null;
+
+    /**
+     * @var Collection<int, CompetitionSaison>
+     */
+    #[ORM\OneToMany(targetEntity: CompetitionSaison::class, mappedBy: 'saison', orphanRemoval: true)]
+    private Collection $competitionSaisons;
+
+    public function __construct()
+    {
+        $this->competitionSaisons = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -210,7 +223,7 @@ class Saison
         $this->updateDatesFromLabel();
     }
 
-    #[Groups(['saison: read'])]
+    #[Groups(['saison: read', 'CompetitionSaisons: read'])]
     public function getLinks(): array
     {
         return [
@@ -218,5 +231,35 @@ class Saison
             'update' => '/api/saisons/' . $this->id,
             'delete' => '/api/saisons/' . $this->id,
         ];
+    }
+
+    /**
+     * @return Collection<int, CompetitionSaison>
+     */
+    public function getCompetitionSaisons(): Collection
+    {
+        return $this->competitionSaisons;
+    }
+
+    public function addCompetitionSaison(CompetitionSaison $competitionSaison): static
+    {
+        if (!$this->competitionSaisons->contains($competitionSaison)) {
+            $this->competitionSaisons->add($competitionSaison);
+            $competitionSaison->setSaison($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompetitionSaison(CompetitionSaison $competitionSaison): static
+    {
+        if ($this->competitionSaisons->removeElement($competitionSaison)) {
+            // set the owning side to null (unless already changed)
+            if ($competitionSaison->getSaison() === $this) {
+                $competitionSaison->setSaison(null);
+            }
+        }
+
+        return $this;
     }
 }
