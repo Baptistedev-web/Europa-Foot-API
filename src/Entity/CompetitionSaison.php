@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\CompetitionSaisonRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -59,18 +61,30 @@ class CompetitionSaison
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['CompetitionSaisons: read', 'saison: read', 'competition: read'])]
+    #[Groups(['CompetitionSaisons: read', 'saison: read', 'Competitions: read', 'MatchsFoot: read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'competitionSaisons')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write'])]
+    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write', 'MatchsFoot: read', 'Competitions: read'])]
     private ?Saison $saison = null;
 
     #[ORM\ManyToOne(inversedBy: 'competitionSaisons')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write'])]
+    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write', 'MatchsFoot: read', 'saison: read'])]
     private ?Competition $competition = null;
+
+    /**
+     * @var Collection<int, MatchFoot>
+     */
+    #[ORM\OneToMany(targetEntity: MatchFoot::class, mappedBy: 'competitionSaison', orphanRemoval: true)]
+    #[Groups(['CompetitionSaisons: read'])]
+    private Collection $matchFoots;
+
+    public function __construct()
+    {
+        $this->matchFoots = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -100,7 +114,7 @@ class CompetitionSaison
 
         return $this;
     }
-    #[Groups(['saison: read', 'competition: read', 'CompetitionSaisons: read'])]
+    #[Groups(['saison: read', 'Competitions: read', 'CompetitionSaisons: read', 'MatchsFoot: read'])]
     public function getLinks(): array
     {
         return [
@@ -108,5 +122,35 @@ class CompetitionSaison
             'update' => '/api/competition_saisons/' . $this->id,
             'delete' => '/api/competition_saisons/' . $this->id,
         ];
+    }
+
+    /**
+     * @return Collection<int, MatchFoot>
+     */
+    public function getMatchFoots(): Collection
+    {
+        return $this->matchFoots;
+    }
+
+    public function addMatchFoot(MatchFoot $matchFoot): static
+    {
+        if (!$this->matchFoots->contains($matchFoot)) {
+            $this->matchFoots->add($matchFoot);
+            $matchFoot->setCompetitionSaison($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMatchFoot(MatchFoot $matchFoot): static
+    {
+        if ($this->matchFoots->removeElement($matchFoot)) {
+            // set the owning side to null (unless already changed)
+            if ($matchFoot->getCompetitionSaison() === $this) {
+                $matchFoot->setCompetitionSaison(null);
+            }
+        }
+
+        return $this;
     }
 }

@@ -113,6 +113,7 @@ class Saison
      * @var Collection<int, CompetitionSaison>
      */
     #[ORM\OneToMany(targetEntity: CompetitionSaison::class, mappedBy: 'saison', orphanRemoval: true)]
+    #[Groups(['saison: read'])]
     private Collection $competitionSaisons;
 
     public function __construct()
