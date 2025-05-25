@@ -61,17 +61,17 @@ class CompetitionSaison
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['CompetitionSaisons: read', 'saison: read', 'Competitions: read', 'MatchsFoot: read'])]
+    #[Groups(['CompetitionSaisons: read', 'saison: read', 'Competitions: read', 'MatchsFoot: read', 'ClubCompetitionSaisons: read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'competitionSaisons')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write', 'MatchsFoot: read', 'Competitions: read'])]
+    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write', 'MatchsFoot: read', 'Competitions: read', 'ClubCompetitionSaisons: read'])]
     private ?Saison $saison = null;
 
     #[ORM\ManyToOne(inversedBy: 'competitionSaisons')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write', 'MatchsFoot: read', 'saison: read'])]
+    #[Groups(['CompetitionSaisons: read', 'CompetitionSaisons: write', 'MatchsFoot: read', 'saison: read', 'ClubCompetitionSaisons: read'])]
     private ?Competition $competition = null;
 
     /**
@@ -81,9 +81,17 @@ class CompetitionSaison
     #[Groups(['CompetitionSaisons: read'])]
     private Collection $matchFoots;
 
+    /**
+     * @var Collection<int, ClubCompetitionSaison>
+     */
+    #[ORM\OneToMany(targetEntity: ClubCompetitionSaison::class, mappedBy: 'competitionSaison', orphanRemoval: true)]
+    #[Groups(['CompetitionSaisons: read'])]
+    private Collection $clubCompetitionSaisons;
+
     public function __construct()
     {
         $this->matchFoots = new ArrayCollection();
+        $this->clubCompetitionSaisons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -114,7 +122,7 @@ class CompetitionSaison
 
         return $this;
     }
-    #[Groups(['saison: read', 'Competitions: read', 'CompetitionSaisons: read', 'MatchsFoot: read'])]
+    #[Groups(['saison: read', 'Competitions: read', 'CompetitionSaisons: read', 'MatchsFoot: read', 'ClubCompetitionSaisons: read'])]
     public function getLinks(): array
     {
         return [
@@ -148,6 +156,36 @@ class CompetitionSaison
             // set the owning side to null (unless already changed)
             if ($matchFoot->getCompetitionSaison() === $this) {
                 $matchFoot->setCompetitionSaison(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClubCompetitionSaison>
+     */
+    public function getClubCompetitionSaisons(): Collection
+    {
+        return $this->clubCompetitionSaisons;
+    }
+
+    public function addClubCompetitionSaison(ClubCompetitionSaison $clubCompetitionSaison): static
+    {
+        if (!$this->clubCompetitionSaisons->contains($clubCompetitionSaison)) {
+            $this->clubCompetitionSaisons->add($clubCompetitionSaison);
+            $clubCompetitionSaison->setCompetitionSaison($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClubCompetitionSaison(ClubCompetitionSaison $clubCompetitionSaison): static
+    {
+        if ($this->clubCompetitionSaisons->removeElement($clubCompetitionSaison)) {
+            // set the owning side to null (unless already changed)
+            if ($clubCompetitionSaison->getCompetitionSaison() === $this) {
+                $clubCompetitionSaison->setCompetitionSaison(null);
             }
         }
 

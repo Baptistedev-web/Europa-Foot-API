@@ -71,7 +71,7 @@ class Club
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['Clubs: read', 'MatchsFoot: read'])]
+    #[Groups(['Clubs: read', 'MatchsFoot: read','ClubCompetitionSaisons: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
@@ -86,7 +86,7 @@ class Club
         pattern: '/^[a-zA-Z0-9\s]+$/',
         message: 'Le nom du club ne peut contenir que des lettres, des chiffres et des espaces.',
     )]
-    #[Groups(['Clubs: read', 'Clubs: write', 'Pays: read', 'MatchsFoot: read'])]
+    #[Groups(['Clubs: read', 'Clubs: write', 'Pays: read', 'MatchsFoot: read', 'ClubCompetitionSaisons: read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 50)]
@@ -101,13 +101,13 @@ class Club
         pattern: '/^[\p{L}0-9\s]+$/u',
         message: 'Le nom du stade ne doit contenir que des lettres (y compris avec accents), des chiffres et des espaces.',
     )]
-    #[Groups(['Clubs: read', 'Clubs: write', 'Pays: read', 'MatchsFoot: read'])]
+    #[Groups(['Clubs: read', 'Clubs: write', 'Pays: read', 'MatchsFoot: read', 'ClubCompetitionSaisons: read'])]
     private ?string $stade = null;
 
     #[ORM\ManyToOne(inversedBy: 'clubs')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank(message: 'Le pays ne peut pas être vide.')]
-    #[Groups(['Clubs: read', 'Clubs: write', 'MatchsFoot: read'])]
+    #[Groups(['Clubs: read', 'Clubs: write', 'MatchsFoot: read', 'ClubCompetitionSaisons: read'])]
     private ?Pays $pays = null;
 
     /**
@@ -117,9 +117,17 @@ class Club
     #[Groups(['Clubs: read'])]
     private Collection $matchFoots;
 
+    /**
+     * @var Collection<int, ClubCompetitionSaison>
+     */
+    #[ORM\OneToMany(targetEntity: ClubCompetitionSaison::class, mappedBy: 'club', orphanRemoval: true)]
+    #[Groups(['Clubs: read'])]
+    private Collection $clubCompetitionSaisons;
+
     public function __construct()
     {
         $this->matchFoots = new ArrayCollection();
+        $this->clubCompetitionSaisons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -162,7 +170,7 @@ class Club
 
         return $this;
     }
-    #[Groups(['Clubs: read', 'Pays: read', 'MatchsFoot: read'])]
+    #[Groups(['Clubs: read', 'Pays: read', 'MatchsFoot: read', 'ClubCompetitionSaisons: read'])]
     public function getLinks(): array
     {
         return [
@@ -196,6 +204,36 @@ class Club
             // set the owning side to null (unless already changed)
             if ($matchFoot->getClubRecevant() === $this) {
                 $matchFoot->setClubRecevant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClubCompetitionSaison>
+     */
+    public function getClubCompetitionSaisons(): Collection
+    {
+        return $this->clubCompetitionSaisons;
+    }
+
+    public function addClubCompetitionSaison(ClubCompetitionSaison $clubCompetitionSaison): static
+    {
+        if (!$this->clubCompetitionSaisons->contains($clubCompetitionSaison)) {
+            $this->clubCompetitionSaisons->add($clubCompetitionSaison);
+            $clubCompetitionSaison->setClub($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClubCompetitionSaison(ClubCompetitionSaison $clubCompetitionSaison): static
+    {
+        if ($this->clubCompetitionSaisons->removeElement($clubCompetitionSaison)) {
+            // set the owning side to null (unless already changed)
+            if ($clubCompetitionSaison->getClub() === $this) {
+                $clubCompetitionSaison->setClub(null);
             }
         }
 

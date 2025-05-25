@@ -14,6 +14,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MatchFootRepository::class)]
+#[Assert\Expression(
+    "this.getClubRecevant() == null or this.getClubExterieur() == null or this.getClubRecevant().getId() != this.getClubExterieur().getId()",
+    message: "Le club recevant et le club extérieur doivent être différents."
+
+)]
 #[ApiResource(
     paginationItemsPerPage: 10,
     paginationMaximumItemsPerPage: 100,
