@@ -61,26 +61,35 @@ class Joueur
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['Joueurs: read', 'Joueurs: write', 'Placements: read'])]
+    #[Groups(['Joueurs: read', 'Joueurs: write', 'Placements: read', 'Effectifs: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['Joueurs: read', 'Joueurs: write', 'Placements: read'])]
+    #[Groups(['Joueurs: read', 'Joueurs: write', 'Placements: read', 'Effectifs: read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 30)]
+    #[Groups(['Joueurs: read', 'Joueurs: write', 'Placements: read', 'Effectifs: read'])]
     private ?string $prenom = null;
 
     /**
      * @var Collection<int, Placement>
      */
     #[ORM\ManyToMany(targetEntity: Placement::class, inversedBy: 'joueurs')]
-    #[Groups(['Joueurs: read', 'Joueurs: write'])]
+    #[Groups(['Joueurs: read', 'Joueurs: write', 'Effectifs: read'])]
     private Collection $placement;
+
+    /**
+     * @var Collection<int, Effectif>
+     */
+    #[ORM\OneToMany(targetEntity: Effectif::class, mappedBy: 'joueur', orphanRemoval: true)]
+    #[Groups(['Joueurs: read', 'Placements: read'])]
+    private Collection $effectifs;
 
     public function __construct()
     {
         $this->placement = new ArrayCollection();
+        $this->effectifs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -136,7 +145,7 @@ class Joueur
         return $this;
     }
 
-    #[Groups(['Placements: read', 'Joueurs: read'])]
+    #[Groups(['Placements: read', 'Joueurs: read', 'Effectifs: read'])]
     public function getLinks(): array
     {
         return [
@@ -144,5 +153,35 @@ class Joueur
             'update' => '/api/joueurs/' . $this->id,
             'delete' => '/api/joueurs/' . $this->id,
         ];
+    }
+
+    /**
+     * @return Collection<int, Effectif>
+     */
+    public function getEffectifs(): Collection
+    {
+        return $this->effectifs;
+    }
+
+    public function addEffectif(Effectif $effectif): static
+    {
+        if (!$this->effectifs->contains($effectif)) {
+            $this->effectifs->add($effectif);
+            $effectif->setJoueur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEffectif(Effectif $effectif): static
+    {
+        if ($this->effectifs->removeElement($effectif)) {
+            // set the owning side to null (unless already changed)
+            if ($effectif->getJoueur() === $this) {
+                $effectif->setJoueur(null);
+            }
+        }
+
+        return $this;
     }
 }

@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250526092137 extends AbstractMigration
+final class Version20250526095730 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -31,6 +31,9 @@ final class Version20250526092137 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE competition_saison (id INT AUTO_INCREMENT NOT NULL, saison_id INT NOT NULL, competition_id INT NOT NULL, INDEX IDX_AF931555F965414C (saison_id), INDEX IDX_AF9315557B39D312 (competition_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE effectif (id INT AUTO_INCREMENT NOT NULL, club_saison_id INT NOT NULL, joueur_id INT NOT NULL, numero INT NOT NULL, INDEX IDX_F0B590F1566CE1AA (club_saison_id), INDEX IDX_F0B590F1A9E2D76C (joueur_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE joueur (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(30) NOT NULL, prenom VARCHAR(30) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -81,6 +84,12 @@ final class Version20250526092137 extends AbstractMigration
             ALTER TABLE competition_saison ADD CONSTRAINT FK_AF9315557B39D312 FOREIGN KEY (competition_id) REFERENCES competition (id)
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE effectif ADD CONSTRAINT FK_F0B590F1566CE1AA FOREIGN KEY (club_saison_id) REFERENCES club_competition_saison (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE effectif ADD CONSTRAINT FK_F0B590F1A9E2D76C FOREIGN KEY (joueur_id) REFERENCES joueur (id)
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE joueur_placement ADD CONSTRAINT FK_B685EF56A9E2D76C FOREIGN KEY (joueur_id) REFERENCES joueur (id) ON DELETE CASCADE
         SQL);
         $this->addSql(<<<'SQL'
@@ -125,6 +134,12 @@ final class Version20250526092137 extends AbstractMigration
             ALTER TABLE competition_saison DROP FOREIGN KEY FK_AF9315557B39D312
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE effectif DROP FOREIGN KEY FK_F0B590F1566CE1AA
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE effectif DROP FOREIGN KEY FK_F0B590F1A9E2D76C
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE joueur_placement DROP FOREIGN KEY FK_B685EF56A9E2D76C
         SQL);
         $this->addSql(<<<'SQL'
@@ -153,6 +168,9 @@ final class Version20250526092137 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE competition_saison
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE effectif
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE joueur
