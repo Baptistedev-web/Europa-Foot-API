@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\PlacementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -68,7 +70,7 @@ class Placement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['Placements: read', 'Placements: write'])]
+    #[Groups(['Placements: read', 'Placements: write', 'Joueurs: read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
@@ -83,7 +85,7 @@ class Placement
         pattern: '/^[a-zA-Z\s\-]+$/',
         message: 'Le nom ne peut contenir que des lettres, des espaces et des tirets.'
     )]
-    #[Groups(['Placements: read', 'Placements: write'])]
+    #[Groups(['Placements: read', 'Placements: write', 'Joueurs: read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 5)]
@@ -98,8 +100,20 @@ class Placement
         pattern: '/^[A-Z]+$/',
         message: 'Le code ne peut contenir que des lettres majuscules.'
     )]
-    #[Groups(['Placements: read', 'Placements: write'])]
+    #[Groups(['Placements: read', 'Placements: write', 'Joueurs: read'])]
     private ?string $code = null;
+
+    /**
+     * @var Collection<int, Joueur>
+     */
+    #[ORM\ManyToMany(targetEntity: Joueur::class, mappedBy: 'placement')]
+    #[Groups(['Placements: read'])]
+    private Collection $joueurs;
+
+    public function __construct()
+    {
+        $this->joueurs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -130,7 +144,7 @@ class Placement
         return $this;
     }
 
-    #[Groups(['Placements: read'])]
+    #[Groups(['Placements: read', 'Joueurs: read'])]
     public function getLinks(): array
     {
         return [
@@ -138,5 +152,32 @@ class Placement
             'update' => '/api/placements/' . $this->id,
             'delete' => '/api/placements/' . $this->id,
         ];
+    }
+
+    /**
+     * @return Collection<int, Joueur>
+     */
+    public function getJoueurs(): Collection
+    {
+        return $this->joueurs;
+    }
+
+    public function addJoueur(Joueur $joueur): static
+    {
+        if (!$this->joueurs->contains($joueur)) {
+            $this->joueurs->add($joueur);
+            $joueur->addPlacement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJoueur(Joueur $joueur): static
+    {
+        if ($this->joueurs->removeElement($joueur)) {
+            $joueur->removePlacement($this);
+        }
+
+        return $this;
     }
 }

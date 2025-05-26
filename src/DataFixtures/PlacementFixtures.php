@@ -16,13 +16,13 @@ class PlacementFixtures extends Fixture
         $placement1->setNom('Gardien');
         $placement1->setCode('GD');
         $manager->persist($placement1);
-        $this->addReference("placement-gardien", $placement1);
+        $this->addReference("placement_gardien", $placement1);
 
         $placement2 = new Placement();
         $placement2->setNom('Défenseur central');
         $placement2->setCode('DC');
         $manager->persist($placement2);
-        $this->addReference("placement-defenseur-central", $placement2);
+        $this->addReference("placement_defenseur_central", $placement2);
 
         $placement3 = new Placement();
         $placement3->setNom('Latéral droit');
